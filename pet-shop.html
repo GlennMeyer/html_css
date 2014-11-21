@@ -1,0 +1,244 @@
+<html>
+<head>
+  <title>Pet Shop World</title>
+</head>
+<body>
+
+<select class="pet-shops">
+  <option>-- Please Select a Pet Shop --</option>
+</select>
+
+<div class="pet-shop">
+  <h3 class="title">Please select a Pet Shop above</h3>
+
+  <div class="cats"></div>
+  <div class="dogs"></div>
+</div>
+
+<div style="clear: left;">
+  <form class="new-cat-form">
+    <h3>Put a cat up for adoption?</h3>
+
+    <!-- This errors div will be empty until the user submits a bad request -->
+    <div class="cat errors"></div>
+
+    <label>Cat name:</label>
+    <input type="text" name="name" />
+
+    <label>Image URL:</label>
+    <input type="text" name="imageUrl" />
+
+    <br />
+
+    <input type="submit" value="Submit Cat" />
+  </form>
+
+  <form class="new-dog-form">
+    <h3>Put a dog up for adoption?</h3>
+
+    <!-- This errors div will be empty until the user submits a bad request -->
+    <div class="dog errors"></div>
+
+    <label>Cat name:</label>
+    <input type="text" name="name" />
+
+    <label>Image URL:</label>
+    <input type="text" name="imageUrl" />
+
+    <select name="happiness">
+      <option value="5">5</option>
+      <option value="4">4</option>
+      <option value="3">3</option>
+      <option value="2">2</option>
+      <option value="1">1</option>
+    </select>
+    <br />
+
+    <input type="submit" value="Submit Dog" />
+  </form>
+</div>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script type="text/javascript">
+var host = "http://pet-shop.api.mks.io"
+// vm stands for view-model. This is the current state of our user interface
+var vm = {
+  shops: [],
+  cats: [],
+  dogs: []
+}
+
+// Reusable utility function
+var findById = function (array, id) {
+  for (var i=0; i < array.length; i++) {
+    var obj = array[i]
+    if (obj.id === id) return obj
+  }
+  return null
+}
+
+// Get all pet shops on page load
+$.get(host + '/shops', function (shops) {
+  vm.shops = shops
+  console.log("Got shops:", shops)
+
+  var $select = $('select.pet-shops')
+  shops.forEach(function(shop) {
+    var $option = $('<option>').text(shop.name).attr('value', shop.id)
+    $select.append($option)
+  })
+})
+
+var activeShop = null
+$('select.pet-shops').on('change', function (e) {
+  var shopId = parseInt( $(this).val() )
+  activeShop = findById(vm.shops, shopId)
+  console.log("Selected:", shopId, activeShop)
+
+  $('.pet-shop h3.title').text(activeShop.name)
+
+  // TODO: MAKE GET REQUEST TO GET CATS AND THEN CALL renderCats
+  $.get(host + "/shops/" + shopId + "/cats", function (cats){
+    renderCats(cats)
+    // renderPets('cat', catList)
+  })
+
+  // TODO: MAKE GET REQUEST TO GET DOGS AND THEN CALL renderDogs
+  $.get(host + "/shops/" + shopId + "/dogs", function (dogs){
+    renderDogs(dogs)
+
+    // renderPets('dog', catList)
+  })
+})
+
+// <div class="pet dog">
+//   <div class="name">Lazy Eater (happiness: 5)</div>
+//   <img src="http://i.imgur.com/vCuyjsS.gif" />
+//   <div class="adopted-status">
+//     Adopted: No :(
+//     <a class="adopt" href="#">Adopt this Pet</a>
+//   </div>
+// </div>
+
+var renderCats = function (cats) {
+  // TODO
+  var location = $('div.cats')
+
+  $('.cats').html('')
+
+  cats.forEach(function(kitty){
+    var div1 = $('<div>')
+    var div2 = $('<div>')
+    var div3 = $('<div>')
+    var img = $('<img>')
+    var a = $('<a>')
+
+    div1.addClass("pet").addClass("cat").css("float", "left").css("margin", "0 0 15 15")
+    console.log("Appending",kitty)
+    location.append(div1)
+    div2.addClass("name").text(kitty.name).css("margin-bottom", "15px")
+    div1.append(div2)
+    img.attr("src", kitty.imageUrl).css("height", "150px").css("width", "150px")
+    img.insertAfter(div2)
+    div3.addClass("adopted-status").text("Adopted: " + (String(kitty.adopted) === "true" ? "Yes :)" : "No :("))
+    div3.insertAfter(img)
+    a.addClass("adopt").text("Adopt This Pet").attr("href", "#").attr("data-id", kitty.id)
+    a.insertAfter(div3)
+  })
+}
+
+var renderDogs = function (dogs) {
+  // TODO
+  var location = $('div.dogs')
+
+  $('.dogs').html('')
+
+  dogs.forEach(function(puppy){
+    var div1 = $('<div>')
+    var div2 = $('<div>')
+    var div3 = $('<div>')
+    var img = $('<img>')
+    var a = $('<a>')
+
+    div1.addClass("pet").addClass("dog").css("float", "left").css("margin", "0 0 15 15")
+    location.append(div1)
+    div2.addClass("name").text(puppy.name + " (" + puppy.happiness + ")").css("margin-bottom", "15px")
+    div1.append(div2)
+    img.attr("src", puppy.imageUrl).css("height", "150px").css("width", "150px")
+    img.insertAfter(div2)
+    div3.addClass("adopted-status").text("Adopted: " + (puppy.adopted === "true" ? "Yes :)" : "No :("))
+    div3.insertAfter(img)
+    a.addClass("adopt").text("Adopt This Pet").attr("href", "#").attr("data-id", puppy.id)
+    a.insertAfter(div3)
+  })
+}
+
+$(document).on('click', 'a.adopt', function (e) {
+  e.preventDefault();
+
+  var shopId = parseInt( $('select.pet-shops').val() )
+  var animal = $(this).parent().parent().attr("class")
+  var petID = parseInt( $(this).attr("data-id") )
+
+  var url = "http://pet-shop.api.mks.io/shops/" + shopId + "/" + animal + "/" + petID
+
+  $.ajax({
+    type: "PUT",
+    url: url,
+    data: {"adopted": true}
+  });
+})
+
+$('form.new-cat-form').on('submit', function (e) {
+  e.preventDefault()
+
+  var requestBody = {}
+  var shopId = parseInt( $('select.pet-shops').val() )
+
+  requestBody.name = $('[name=name]', this).val()
+  requestBody.imageUrl = $('[name=imageUrl]', this).val()
+
+  var url = "http://pet-shop.api.mks.io/shops/" + shopId + "/cats"
+
+  $('.errors', 'form').html('')
+  
+  $.post(url, requestBody)
+    .done(function(newCat) {
+      console.log("You are heartless!  You put a cat up for adoption!", newCat)
+      
+    })
+    .fail(function(error) {
+      console.log("Invalid POST request:", error.responseText)
+      $('.cat.errors', 'form').append("Invalid POST request:", error.responseText)
+    })
+})
+
+$('form.new-dog-form').on('submit', function (e) {
+  e.preventDefault()
+
+  var requestBody = {}
+  var shopId = parseInt( $('select.pet-shops').val() )
+
+  requestBody.name = $('[name=name]', this).val()
+  requestBody.imageUrl = $('[name=imageUrl]', this).val()
+  requestBody.happiness = $('[name=happiness]', this).val()
+
+  var url = "http://pet-shop.api.mks.io/shops/" + shopId + "/dogs"
+
+  $('.errors', 'form').html('')
+  
+  $.post(url, requestBody)
+    .done(function(newDog) {
+      console.log("You are heartless!  You put a dog up for adoption!", newDog)
+      
+    })
+    .fail(function(error) {
+      console.log("Invalid POST request:", error.responseText)
+      $('.dog.errors', 'form').append("Invalid POST request:", error.responseText)
+    })
+})
+
+</script>
+
+</body>
+</html>

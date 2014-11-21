@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link rel="shortcut icon" href="../../docs-assets/ico/favicon.png">
+
+  <title>Austin Weather</title>
+  <!-- Bootstrap core CSS -->
+  <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+
+  <!-- Just for debugging purposes. Don't actually copy this line! -->
+  <!--[if lt IE 9]><script src="../../docs-assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+
+  <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+  <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="jumbotron">
+    <h1>Austin Weather</h1>
+    <canvas id="icon1" width="128" height="128"></canvas>
+
+    <div class="weather-forecast">
+      <div class="day">
+        <h3>Today</h3>
+        <dl class="day dl-horizontal">
+          <dt>Humidity:</dt>
+          <dd id="humidity"></dd>
+          <dt>Pressure:</dt>
+          <dd id="pressure"></dd>
+          <dt>Temperature:</dt>
+          <dd id="temperature"></dd>
+          <dt>High:</dt>
+          <dd id="high"></dd>
+          <dt>Low:</dt>
+          <dd id="low"></dd>
+        </dl>
+      </div>
+    </div>
+
+    <p id="get-weather"><a class="btn btn-lg btn-success" href="#" role="button">Get Weather</a></p>
+  </div>
+
+  <div class="footer">
+    <p>&copy; The Maker Square 2013</p>
+  </div>
+
+</div> <!-- /container -->
+
+
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="http://learn.themakersquare.com/materials/vendor/jquery.riot.js"></script>
+<script src="http://learn.themakersquare.com/materials/week-7/weather-icons.js"></script>
+<script type="text/javascript">
+
+  var weatherUrl = "http://api.openweathermap.org/data/2.5/weather?q=Austin&mode=json&units=imperial";
+
+  $("#get-weather").on('click', function (e) {
+    e.preventDefault();
+    console.log('Fetching weather...');
+
+    // TODO: Complete exercise #1 here
+    $.get(weatherUrl, function (forecast){
+      var austinWeather = []
+      var skycons = new Skycons({"color": "blue"});
+
+      // Get data and display it
+      $('#humidity').html(forecast.main.humidity+"%")
+      $('#pressure').text(forecast.main.pressure)
+      $('#temperature').html(forecast.main.temp+"<sup>&deg;C</sup> &#47; "+(forecast.main.temp*9/5+32).toFixed(2)+"<sup>&deg;F</sup>")
+      $('#high').html(forecast.main.temp_max+"<sup>&deg;C</sup> &#47; "+(forecast.main.temp_max*9/5+32).toFixed(2)+"<sup>&deg;F</sup>")
+      $('#low').html(forecast.main.temp_min+"<sup>&deg;C</sup> &#47; "+(forecast.main.temp_min*9/5+32).toFixed(2)+"<sup>&deg;F</sup>")
+
+      // Switch case for weather icon
+      switch (forecast.weather[0].id) {
+        case 500:
+          skycons.add("icon1", Skycons.RAIN)
+          break;
+        case 600:
+          skycons.add("icon1", Skycons.SNOW)
+          break;
+        case 611:
+          skycons.add("icon1", Skycons.SLEET)
+          break;
+        case 741:
+          skycons.add("icon1", Skycons.FOG)
+          break;
+        case 800:
+          skycons.add("icon1", Skycons.CLEAR_DAY)
+          break;
+        case 801:
+          skycons.add("icon1", Skycons.PARTLY_CLOUDY_DAY)
+          break;
+        case 804:
+          skycons.add("icon1", Skycons.CLOUDY)
+          break;
+        case 905:
+          skycons.add("icon1", Skycons.WIND)
+          break;
+      }
+    })
+
+    // TODO: Complete exercise #2 here
+    // skycons.add("icon1", Skycons.PARTLY_CLOUDY_DAY)
+    // Skycons.CLOUDY
+    // Skycons.CLEAR_DAY
+    // Skycons.FOG
+    // Skycons.CLEAR_NIGHT
+    // Skycons.PARTLY_CLOUDY_DAY
+    // Skycons.PARTLY_CLOUDY_NIGHT
+    // Skycons.RAIN
+    // Skycons.SLEET
+    // Skycons.SNOW
+    // Skycons.WIND
+
+  });
+
+
+
+
+</script>
+
+
+
+</body>
+</html>

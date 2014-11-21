@@ -1,0 +1,358 @@
+<html>
+<head>
+  <title>jQuery Basic</title>
+</head>
+<body>
+	<!-- added element from lesson -->
+	<div>
+		<h3>Reviewers:</h3>
+		<ul class="reviewers"></ul>
+	</div>
+
+	<div>
+		<h3>Top Restaurants(Easy):</h3>
+		<ul class="top-restaurants easy"></ul>
+	</div>
+
+	<div>
+		<h3>Top Restaurants(Hard):</h3>
+		<ul class="top-restaurants hard"></ul>
+	</div>
+
+	<div>
+		<h3>Austin Restaurants:</h3>
+		<ul class="austin-restaurants"></ul>
+	</div>
+
+	<div>
+		<h3>Popular Movie Genres(Easy):</h3>
+		<ul class="popular-movie-genres easy"></ul>
+	</div>
+
+	<div>
+		<h3>Popular Movie Genres(Hard):</h3>
+		<ul class="popular-movie-genres hard"></ul>
+	</div>
+
+	<div>
+		<h3>Top Movie Genres:</h3>
+		<ul class="top-movie-genres"></ul>
+	</div>
+
+	<div>
+		<h3>Chawsome Cheeses(Easy):</h3>
+		<div class="cheeses easy"></div>
+	</div>
+
+	<div>
+		<h3>Chawsome Cheeses(Hard):</h3>
+		<div class="cheeses hard"></div>
+	</div>
+
+	<form class="cheese">
+	  <h3>New Cheese Review</h3>
+
+	  <!-- This errors div will be empty until the user submits a bad request -->
+	  <div class="errors"></div>
+
+	  <label>Reviewer name:</label>
+	  <input type="text" name="reviewer" />
+
+	  <label>Cheese:</label>
+	  <input type="text" name="cheese" />
+
+	  <select name="rating">
+	  	<option value="10">10</option>
+	  	<option value="9">9</option>
+	  	<option value="8">8</option>
+	  	<option value="7">7</option>
+	  	<option value="6">6</option>
+	  	<option value="5">5</option>
+	  	<option value="4">4</option>
+	  	<option value="3">3</option>
+	  	<option value="2">2</option>
+	  	<option value="1">1</option>
+	  </select>
+	  <br />
+	  <textarea name="comment"></textarea>
+	  <br />
+
+	  <input type="submit" value="Submit Review" />
+	</form>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script type="text/javascript">
+
+// added code from lesson
+$.get("http://critics.api.mks.io/restaurants", function (reviews) {
+  console.log("Restaurant reviews:", reviews)
+
+  var reviewers = []
+
+  reviews.forEach(function(r) {
+    if (reviewers.indexOf(r.reviewer) == -1) {
+      reviewers.push(r.reviewer)
+    }
+  })
+  console.log("All reviewers:", reviewers)
+
+  renderReviewers(reviewers)
+})
+
+var renderReviewers = function (reviewers) {
+  var ul = $('ul.reviewers')
+
+  reviewers.forEach(function(name) {
+    var li = $('<li>')
+
+    li.text(name)
+    ul.append(li)
+  })
+}
+// My code
+
+// Easy way
+$.get("http://critics.api.mks.io/restaurants", function (reviews){
+	console.log("Restaurants with a rating of 8 or above:")
+
+	var topRestaurants = []
+	var topRestaurantsHTML = []
+
+	reviews.forEach(function(review) {
+		if (parseInt(review.rating) > 7){
+			topRestaurants.push([parseInt(review.rating), review.venue])
+		}
+	})
+	topRestaurants.sort(function(a,b){return b[0] - a[0]}).forEach(function(index){
+		topRestaurantsHTML.push("<strong>" + index[0] + "</strong> - " + index[1])
+		console.log(index.join(" - "))
+	})
+	console.log("--------------------")
+
+	renderTopRestaurantsEasy(topRestaurantsHTML)
+	renderTopRestaurantsHard(topRestaurants)
+})
+var renderTopRestaurantsEasy = function (reviews){
+	var ul = $('ul.top-restaurants.easy')
+
+	reviews.forEach(function(venue){
+		var li = $('<li>')
+
+		li.html(venue)
+		ul.append(li)
+	})
+}
+var renderTopRestaurantsHard = function (reviews){
+	var ul = $('ul.top-restaurants.hard')
+	reviews.forEach(function(venue){
+		var li = $('<li>')
+		var strong = $('<strong>')
+
+		li.append(strong)
+		strong.text(venue[0])
+		li.append(" - " + venue[1])
+		ul.append(li)
+	})
+}
+
+$.get("http://critics.api.mks.io/restaurants", function (reviews){
+	console.log("Austin Restaurants:")
+
+	var austinRestaurants = []
+	var austinRestaurantsHTML = []
+
+	reviews.forEach(function(review) {
+		if (review.location){
+			if (review.location.match(/austin/i)){
+				austinRestaurants.push(review.venue)
+				austinRestaurantsHTML.push()
+			}	
+		}
+	})
+	austinRestaurants.forEach(function(index){
+		console.log(index)
+	})
+	console.log("--------------------")
+
+	renderAustinRestaurants(austinRestaurants)
+})
+var renderAustinRestaurants = function (reviews){
+	var ul = $('ul.austin-restaurants')
+
+	reviews.forEach(function(venue){
+		var li = $('<li>')
+
+		li.html(venue)
+		ul.append(li)
+	})
+}
+
+$.get("http://critics.api.mks.io/movie-genres", function (reviews){
+	console.log("Popular Movie Genres (Easy):")
+
+	var popularMovieGenres = {}
+	var array = []
+	var popularMovieGenresHTML = []
+	var sum = {}
+	var average = {}
+
+	reviews.forEach(function(review) {
+		popularMovieGenres[review.genre] || (popularMovieGenres[review.genre] = 0)
+		popularMovieGenres[review.genre] += 1
+		sum[review.genre] || (sum[review.genre] = 0)
+		sum[review.genre] += parseInt(review.rating)
+	})
+
+	for (var item in sum) {
+		average[item] = parseFloat(sum[item]/popularMovieGenres[item])
+	}
+
+	$.map(popularMovieGenres, function(value, index) {
+    	array.push([index, value, average[index]]);
+	});
+	array.sort(function(a,b){return b[1]-a[1]}).forEach(function(index){
+		console.log(index[0] + " - " + index[1] + " reviews")
+		popularMovieGenresHTML.push(index[0] + " - <strong>" + index[2].toFixed(2) + "</strong> <i>" +index[1] + " reviews</i>")
+	})
+	console.log("--------------------")
+
+	renderPopularMovieGenresEasy(popularMovieGenresHTML)
+	renderPopularMovieGenresHard(array)
+})
+var renderPopularMovieGenresEasy = function (reviews){
+	var ul = $('ul.popular-movie-genres.easy')
+
+	reviews.forEach(function(genre){
+		var li = $('<li>')
+
+		li.html(genre)
+		ul.append(li)
+	})
+}
+var renderPopularMovieGenresHard = function (reviews){
+	var ul = $('ul.popular-movie-genres.hard')
+
+	reviews.forEach(function(genre){
+		var li = $('<li>')
+		var strong = $('<strong>')
+		var em = $('<em>')
+
+		li.text(genre[0] + " - ").append(strong)
+		strong.text(genre[2].toFixed(2) + " ")
+		li.append(em)
+		em.text(genre[1] + " reviews")
+		ul.append(li)
+	})
+}
+
+$.get("http://critics.api.mks.io/movie-genres", function (reviews){
+	console.log("Top Movie Genres:")
+
+	var count = {}
+	var sum = {}
+	var average = []
+	var topMovieGenres = []
+
+	reviews.forEach(function(review){
+		count[review.genre] || (count[review.genre] = 0)
+		count[review.genre] += 1
+		sum[review.genre] || (sum[review.genre] = 0)
+		sum[review.genre] += parseInt(review.rating)
+	})
+
+	for (var item in sum) {
+		average.push([item, parseFloat(sum[item]/count[item])])
+	}
+
+	average.sort(function(a,b){return b[1]-a[1]}).forEach(function(index){
+		console.log(index[0] + " - " + index[1].toFixed(2))
+		topMovieGenres.push(index[0] + " - " + index[1].toFixed(2))
+	})
+	console.log("--------------------")
+	renderTopMovieGenres(topMovieGenres)
+})
+var renderTopMovieGenres = function (reviews){
+	var ul = $('ul.top-movie-genres')
+
+	reviews.forEach(function(genre){
+		var li = $('<li>')
+		li.text(genre)
+		ul.append(li)
+	})
+}
+
+$.get("http://critics.api.mks.io/cheeses", function (reviews){
+	var cheeseReviews = []
+	var cheeseReviewsHard = []
+
+	reviews.forEach(function(review){
+		console.log(review.cheese + ": " + review.comment + "  --" + review.reviewer)
+		cheeseReviews.push("<h3>" + review.cheese + "</h3><blockquote>" + review.comment + " <cite>--" + review.reviewer + "</cite></blockquote>")
+		cheeseReviewsHard.push([review.cheese, review.comment, review.reviewer])
+	})
+	console.log("--------------------")
+
+	renderCheeseReviewsEasy(cheeseReviews)
+	renderCheeseReviewsHard(cheeseReviewsHard)
+
+})
+var renderCheeseReviewsEasy = function (reviews){
+	var div1 = $('div.cheeses.easy')
+
+	reviews.forEach(function(cheese){
+		var div2 = $('<div class="review easy">')
+		div2.html(cheese)
+		div1.append(div2)
+	})
+}
+var renderCheeseReviewsHard = function (array){
+	var div3 = $('div.cheeses.hard')
+
+	array.forEach(function(index){
+		var div4 = $('<div class="review hard">')
+		var h3 = $('<h3>')
+		var blockquote = $('<blockquote>')
+		var cite = $('<cite>')
+
+		div3.append(h3)
+		h3.text(index[0])
+		div3.append(blockquote)
+		blockquote.text(index[1] + " -- ")
+		blockquote.append(cite)
+		cite.text(index[2])
+
+	})
+}
+
+$('form.cheese').on('submit', function (e) {
+  e.preventDefault()
+
+  // Delete this next line when it starts getting annoying :)
+  // alert("You submitted the form! (but I stopped it)")
+
+  var requestBody = {}
+
+  requestBody.reviewer = $('[name=reviewer]', this).val()
+  requestBody.cheese = $('[name=cheese]', this).val()
+  requestBody.comment = $('[name=comment]', this).val()
+  requestBody.rating = $('[name=rating]', this).val()
+
+  var url = "http://critics.api.mks.io/cheeses"
+
+  $('.errors', 'form').html('')
+  
+  $.post(url, requestBody)
+    .done(function(newCheese) {
+      console.log("Success! Created new cheese review:", newCheese)
+      $('div.review:last').append("<h3>" + requestBody.cheese + "</h3><blockquote>" + requestBody.comment + " <cite>--" + requestBody.reviewer + "</cite></blockquote>")
+    })
+    .fail(function(error) {
+      console.log("Invalid POST request:", error.responseText)
+      $('.errors', 'form').append("Invalid POST request:", error.responseText)
+    })
+})
+
+</script>
+
+</body>
+</html>
